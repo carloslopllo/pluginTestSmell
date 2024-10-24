@@ -42,7 +42,7 @@ public class MyMojo extends AbstractMojo {
 
     public void execute() throws MojoExecutionException {
         File csvFile = csvParamJar();
-
+        runJarFile(csvFile);
     }
 
     private File csvParamJar() throws MojoExecutionException {
@@ -70,5 +70,34 @@ public class MyMojo extends AbstractMojo {
             throw new MojoExecutionException("Error creando el archivo CSV", e);
         }
         return csvFile;
+    }
+
+    private void runJarFile(File csvFile) throws MojoExecutionException {
+        try {
+            File workingDirectory = new File(exitPath);
+            getLog().debug("Iniciando la ejecución del archivo JAR con los siguientes parámetros:");
+            getLog().debug("JarPath: " + jarPath);
+            getLog().debug("CSVFile: " + csvFile.getAbsolutePath());
+            getLog().debug("Working directory: " + workingDirectory.getAbsolutePath());
+
+            getLog().info("Ejecutando el comando: java -jar " + jarPath + " " + csvFile.getAbsolutePath() + " en el directorio " + workingDirectory);
+            ProcessBuilder pb = new ProcessBuilder("java", "-jar", jarPath, csvFile.getAbsolutePath());
+            pb.directory(workingDirectory);
+            pb.inheritIO(); // Redirige la salida del proceso al terminal
+
+            Process process = pb.start();
+            int exitCode = process.waitFor();
+
+            if (exitCode != 0) {
+                getLog().error("Error ejecutando el .jar, código de salida: " + exitCode);
+                throw new MojoExecutionException("Error ejecutando el .jar, código de salida: " + exitCode);
+            } else {
+                getLog().info("Ejecución del .jar completada exitosamente, ruta del fichero de salida " + exitPath);
+            }
+
+        } catch (IOException | InterruptedException e) {
+            getLog().error("Error ejecutando el comando java -jar", e);
+            throw new MojoExecutionException("Error ejecutando el comando java -jar", e);
+        }
     }
 }
