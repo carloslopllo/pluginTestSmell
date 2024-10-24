@@ -1,5 +1,9 @@
 package com.github.carloslopllo;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -37,6 +41,34 @@ public class MyMojo extends AbstractMojo {
     private String exitPath;
 
     public void execute() throws MojoExecutionException {
+        File csvFile = csvParamJar();
 
+    }
+
+    private File csvParamJar() throws MojoExecutionException {
+        getLog().debug("Parámetros: projectName=" + projectName + ", csvName=" + csvName + ", csvDirectory=" + csvDirectory);
+        getLog().debug("Test paths: " + String.join(", ", testPaths));
+        getLog().debug("Main paths: " + String.join(", ", mainPaths));
+
+        // Crear el archivo CSV
+        File csvFile = new File(csvDirectory, csvName);
+
+        try (FileWriter writer = new FileWriter(csvFile)) {
+            // Iterar sobre las rutas de pruebas y producción y escribirlas en el CSV
+            for (int i = 0; i < testPaths.length; i++) {
+                getLog().debug("Escribiendo en CSV: projectName=" + projectName + ", testPath=" + testPaths + ", mainPath=" + mainPaths);
+                String testPath = testPaths[i];
+                String mainPath = i < mainPaths.length ? mainPaths[i] : "";
+
+                // Escribir línea en el archivo CSV
+                writer.write(projectName + "," + testPath + "," + mainPath + "\n");
+            }
+
+            getLog().info("CSV creado en: " + csvFile.getAbsolutePath() + " con nombre " + csvName);
+        } catch (IOException e) {
+            getLog().error("Error creando el archivo CSV", e);
+            throw new MojoExecutionException("Error creando el archivo CSV", e);
+        }
+        return csvFile;
     }
 }
