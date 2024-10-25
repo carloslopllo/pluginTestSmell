@@ -36,6 +36,8 @@
         <version>3.6.2</version>
         <configuration>
           <goalPrefix>pluginTestSmell</goalPrefix>
+          <source>17</source>
+          <target>17</target>
         </configuration>
         <executions>
           <execution>
